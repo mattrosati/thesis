@@ -55,7 +55,7 @@ tab <- topTable(ebayes, coef = 2, adjust.method = "BH", n = 100000)
 #annotate both tab and data.filter
 gene_expr <- data.frame(data.filter@featureData@data, data.filter@assayData[["exprs"]])
 genenames <- rownames(tab)
-tab$external_gene_name <- as.character(getSYMBOL(genenames, "hgu133plus2.db"))
+tab$external_gene_name <- as.character(getSYMBOL(genenames, "hgu133a.db"))
 tab2 <- merge(gene_expr, tab, by=0, all.x = F, all.y = T)
 tab2.sort <- tab2[order(-abs(tab2$logFC), tab2$P.Value),]
 tab2.sort <- tab2.sort[!duplicated(tab2.sort$external_gene_name),]
