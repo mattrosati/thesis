@@ -22,6 +22,9 @@ datamatrix <- as.matrix(data.raw)
 datamatrix <- apply(datamatrix, 2, as.numeric)
 rownames(datamatrix) <- rownames(data.raw)
 
+#transform to log2
+datamatrix <- log2(datamatrix)
+
 #build expression set so that I can filter
 experimentData <- new("MIAME", name = "Pierre Fermat",
                       lab = "Francis Galton Lab",
@@ -40,15 +43,17 @@ phenoData <- new("AnnotatedDataFrame", data = pd, varMetadata = vl)
 data <- new("ExpressionSet", exprs = datamatrix, phenoData = phenoData,
             experimentData = experimentData, annotation = "hgu133a")
 
-# normalize and get p-values, not needed because data is already normalized
+# normalize, not needed because data is already normalized
 # names <- rownames(data)
 # data.b <- lumiB(data, method="bgAdjust.affy")
 # data.l <- lumiT(data.b, method="log2")
 # data.n <- lumiN(data.l, method="quantile")
-# 
-# design <- model.matrix(~pd$population)
-# fit <- lmFit(data.n, design)
-# ebayes <- eBayes(fit)
+
+# get p-values
+pd$population <- relevel(pd$population, "control")    #so that in design matrix, active comes up as 1
+design <- model.matrix(~pd$population)
+fit <- lmFit(data, design)
+ebayes <- eBayes(fit)
 
 #filter to remove control probes
 data.filter <- nsFilter(data, require.entrez=TRUE, require.GOBP=FALSE, 
@@ -56,24 +61,24 @@ data.filter <- nsFilter(data, require.entrez=TRUE, require.GOBP=FALSE,
                         require.CytoBand=FALSE, remove.dupEntrez=FALSE, var.filter=FALSE, 
                         feature.exclude="^AFFX")$eset
 
-#create data frame with fold change, sort by logFC, and remove duplicates
+#toptable
+tab <- topTable(ebayes, coef = 2, adjust.method = "BH", n = 100000)
+
+#annotate gene expression data
 gene_expr <- data.frame(data.filter@featureData@data, data.filter@assayData[["exprs"]])
-genenames <- rownames(gene_expr)
-gene_expr$external_gene_name <- as.character(getSYMBOL(genenames, "hgu133a.db"))
-gene_expr$avec <- c(rowMeans(gene_expr[, c(2, 6, 7, 8)]))
-gene_expr$avea <- c(rowMeans(gene_expr[, c(1, 3, 4, 5)]))
-gene_expr$logFC <- c(log2(with(gene_expr, avea/avec)))
+gene_expr$PROBEID <- rownames(gene_expr)
+annotate <- AnnotationDbi::select(hgu133a.db, keys = gene_expr$PROBEID, 
+                   columns = c("SYMBOL", "GENENAME", "ENSEMBL", "ENTREZID"), keytype = "PROBEID")
+annotate <- annotate[!is.na(annotate$SYMBOL),]
+gene_expr <- left_join(gene_expr, annotate)
 
-gene_expr.sort <- gene_expr[order(-abs(gene_expr$logFC)),]
-gene_expr.sort <- gene_expr.sort[!duplicated(gene_expr.sort$external_gene_name),]
-
-#annotate
-annotationset <- getBM(attributes=c("external_gene_name", "entrezgene", "ensembl_gene_id", "description"), 
-                       filters="external_gene_name", values=gene_expr.sort$external_gene_name, mart=ensembl)
+#merge with tab, sort by logFC, remove duplicates
+tab$PROBEID <- rownames(tab)
+tab2 <- left_join(gene_expr, tab)
+tab2.sort <- tab2[order(-abs(tab2$logFC), tab2$P.Value),]
+tab2.sort <- tab2.sort[!duplicated(tab2.sort$SYMBOL),]
 
 #make final and save
-final <- full_join(annotationset, gene_expr.sort[,9:12])
-final.sort <- final[order(-abs(final$logFC)),]
-final.sort <- final.sort[!duplicated(final.sort$ensembl_gene_id),]
-write.csv(final.sort, file = "~/Desktop/MacMicking Lab/IFN_microarray/Processed Data/microglialf.csv")
+final <- tab2.sort[,c(10, 11, 12, 13, 6, 2, 8, 7, 1, 3, 4, 5, 14, 15, 16, 17, 18, 19)]
+write.csv(final, file = "~/Desktop/MacMicking Lab/IFN_microarray/Processed Data/microglialf.csv")
 
