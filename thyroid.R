@@ -1,25 +1,7 @@
-library(affy)
-library(affyPLM)
-library(simpleaffy)
-library(dplyr)
-library(biomaRt)
-library(genefilter)
-library(hgu133a.db)
-library(limma)
-library(annotate)
+source("packages.R")
 
 ensembl <- useMart(biomart="ensembl", dataset="hsapiens_gene_ensembl")
 
-
-
-
-
-
-
-library(biomaRt)
-library(dplyr)
-
-ensembl <- useMart(biomart="ensembl", dataset="hsapiens_gene_ensembl")
 
 activated <- read.csv("~/Desktop/MacMicking Lab/IFN_microarray/activatedmatrix.csv")
 suppressed <- read.csv("~/Desktop/MacMicking Lab/IFN_microarray/suppressedmatrix.csv")
