@@ -1,12 +1,4 @@
-library(lumi)
-library(affyPLM)
-library(simpleaffy)
-library(dplyr)
-library(biomaRt)
-library(genefilter)
-library(hgu133a.db)
-library(limma)
-library(annotate)
+source("packages.R")
 
 ensembl <- useMart(biomart="ensembl", dataset="hsapiens_gene_ensembl")
 
@@ -26,12 +18,7 @@ rownames(datamatrix) <- rownames(data.raw)
 datamatrix <- log2(datamatrix)
 
 #build expression set so that I can filter
-experimentData <- new("MIAME", name = "Pierre Fermat",
-                      lab = "Francis Galton Lab",
-                      contact = "pfermat@lab.not.exist",
-                      title = "Smoking-Cancer Experiment",
-                      abstract = "An example ExpressionSet",
-                      url = "www.lab.not.exist",
+experimentData <- new("MIAME", name = "Matteo Rosati",
                       other = list(notes = "Created from text files"))
 pd <- data.frame(population = factor(c("active","control", "active",
                                        "active","active", "control",
