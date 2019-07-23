@@ -11,6 +11,7 @@ source('packages.R')
 # I like: Microglial, ARPE, Fibroblast (right skewed intensities), 
 #         Hepatocyte (right skewed intensities), Keratinocyte, ~HSG
 # AALEB is a problem because of extremely skewed intensities, 
+# Thyroid just doesn't have any matches?
 
 
 all_series <- data.frame(Cell = c("Thyroid", "Microglial", "AALEB", "ARPE", "Fibroblast", "Hepatocyte", "Keratinocyte", "HSG"),
@@ -19,7 +20,7 @@ all_series <- data.frame(Cell = c("Thyroid", "Microglial", "AALEB", "ARPE", "Fib
                          Selections = c("01XX01XX01XX", "XXXXXXXX1111XXXXXXXX0000", "0011XXXX", "00011XXXXXXXXXXXX", "000XXXXXXXXXXXXXXX111XXX", "00XXXXXX11", "1XX01XX01XX0",
                                         "XXXXXXXXXXXXXXXXXX000XXX111XXXXXXXXX"))
 
-chosen <- "HSG" #cell type data to fetch
+chosen <- "Thyroid" #cell type data to fetch
 series <- toString(all_series[all_series$Cell == chosen, 2])
 platform <- toString(all_series[all_series$Cell == chosen, 3])
 
