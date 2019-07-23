@@ -4,9 +4,13 @@
 library(Biobase)
 library(GEOquery)
 library(limma)
+library(genefilter)
+source('packages.R')
 
 # load series and platform data from GEO
-# I like: Microglial, ARPE, ~Fibroblast, ~Hepatocyte, Keratinocyte, ~HSG
+# I like: Microglial, ARPE, Fibroblast (right skewed intensities), 
+#         Hepatocyte (right skewed intensities), Keratinocyte, ~HSG
+# AALEB is a problem because of extremely skewed intensities, 
 
 
 all_series <- data.frame(Cell = c("Thyroid", "Microglial", "AALEB", "ARPE", "Fibroblast", "Hepatocyte", "Keratinocyte", "HSG"),
@@ -49,37 +53,75 @@ exprs(gset) <- log2(ex) }
 sml <- paste("G", sml, sep="")    # set group names
 fl <- as.factor(sml)
 gset$description <- fl
-design <- model.matrix(~ description + 0, gset)
-colnames(design) <- levels(fl)
+
+#check low intensity probes
+tran <- log2(exprs(gset))
+medians <- rowMedians(Biobase::exprs(gset))
+hist_res <- hist(medians, 100, col = "cornsilk1", freq = FALSE, 
+                 main = "Histogram of the median intensities", 
+                 border = "antiquewhite4",
+                 xlab = "Median intensities")
+
+#remove duplicate symbols!!
+#gset <- featureFilter(gset, require.entrez=FALSE, require.GOBP=FALSE, 
+#                        require.GOCC=FALSE, require.GOMF=FALSE, 
+#                        require.CytoBand=FALSE, remove.dupEntrez=FALSE, 
+#                        feature.exclude="^AFFX")
+
+#remove values with no symbol and multiple mappings, figure this out later!
+#gset <- subset(gset, !is.na(Gene.symbol))
+
+#checks for blocking in groups with paired biological replicates
+#for microglial
+if (chosen == "Microglial") {
+  titles <- as.character(pData(gset)$title)
+  populations <- c("B18", "O", "W", "Y20", "B18", "O", "W", "Y20")
+  populations <- as.factor(populations)
+  col <- as.factor( c( levels(fl), levels(populations) ) )
+} else if (chosen == "Thyroid" | chosen == "Keratinocyte") {
+  populations <- factor(c(1, 1, 2, 2, 3, 3))
+} else if (chosen == "AALEB" | chosen == "Hepatocyte") {
+  populations <- factor(c(1, 2, 1, 2))
+} else if (chosen == "Fibroblast") {
+  populations <- factor(c(1, 2, 3, 1, 2, 3))
+}
+  
+
+
+#Run analysis
+if (!(chosen == "ARPE" | chosen == "HSG")) {
+  design <- model.matrix(~ description + 0 + populations, gset)
+} else {
+  design <- model.matrix(~ description + 0, gset)
+}
+#colnames(design) <- levels(col)
 fit <- lmFit(gset, design)
-cont.matrix <- makeContrasts(G1-G0, levels=design)
+cont.matrix <- makeContrasts(descriptionG1-descriptionG0, levels=design)
 fit2 <- contrasts.fit(fit, cont.matrix)
-fit2 <- eBayes(fit2, 0.01)
+fit2 <- eBayes(fit2)
 tT <- topTable(fit2, adjust="fdr", sort.by="B", number=Inf)
 
 tT <- subset(tT, select=c("ID","adj.P.Val","P.Value","t","B","logFC","Gene.symbol","Gene.title", "GO.Function.ID", "GO.Process.ID", "GO.Component.ID"))
 
-of_interest <- as.integer(nrow(tT[tT$P.Value <= 0.05 & abs(tT$logFC) >= 1, ]))
-of_interest_nop <- as.integer(nrow(tT[abs(tT$logFC) >= 1, ]))
-
-supp <- as.integer(nrow(tT[tT$P.Value <= 0.05 & tT$logFC <= -1, ]))
-act <- as.integer(nrow(tT[tT$P.Value <= 0.05 & tT$logFC >= 1, ]))
+of_interest_fold <- as.integer(nrow(tT[abs(tT$logFC) > 1,]))
+of_interest <- as.integer(nrow(tT[tT$adj.P.Val <= 0.1 & abs(tT$logFC) >= 1, ]))
 
 print(c(of_interest))
-print(c(supp, act))
 hist(tT$P.Value)
 
 #sort by p value and log fold change, remove duplicates
-tT.sort <- tT[order(-abs(tT$logFC), tT$P.Value),]
+tT.sort <- tT[order(-abs(tT$logFC), tT$adj.P.Val),]
 tT.sort <- tT.sort[!duplicated(tT.sort$Gene.symbol),]
 
+supp <- as.integer(nrow(tT.sort[tT.sort$adj.P.Val <= 0.1 & tT.sort$logFC < 0, ]))
+act <- as.integer(nrow(tT.sort[tT.sort$adj.P.Val <= 0.1 & tT.sort$logFC > 0, ]))
 
+print(c(supp, act))
 
 #make final and save
-final <- tab2.sort[,c(10, 11, 12, 13, 6, 2, 8, 7, 1, 3, 4, 5, 14, 15, 16, 17, 18, 19)]
-write.csv(final, file = "~/Desktop/MacMicking Lab/IFN_microarray/Processed Data/microglialf.csv")
+final <- tT.sort[,-1]
+path <- paste("~/Desktop/MacMicking Lab/IFN_microarray/Processed Data/", tolower(chosen), "f.csv", sep = "")
+write.csv(final, file = path)
 
-
-write.table(tT, file=stdout(), row.names=F, sep=",")
 
 
