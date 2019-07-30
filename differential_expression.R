@@ -59,7 +59,7 @@ hist_res <- hist(medians, 100, col = "cornsilk1", freq = FALSE,
 #                        require.CytoBand=FALSE, remove.dupEntrez=FALSE, 
 #                        feature.exclude="^AFFX")
 
-#remove values with no symbol and multiple mappings, figure this out later!
+
 #gset <- subset(gset, !is.na(Gene.symbol))
 
 #checks for blocking in groups with paired biological replicates. input is gset, returns design.
@@ -102,25 +102,11 @@ p.vals <- function(gset, design) {
   tT.sort <- tT.sort[!duplicated(tT.sort$Gene.symbol),]
 }
 
-
-of_interest_fold <- as.integer(nrow(tT[abs(tT$logFC) > 1,]))
-of_interest <- as.integer(nrow(tT[tT$adj.P.Val <= 0.1 & abs(tT$logFC) >= 1, ]))
-
-print(c(of_interest))
-hist(tT$P.Value)
-
-
-supp <- as.integer(nrow(tT.sort[tT.sort$adj.P.Val <= 0.1 & tT.sort$logFC < 0, ]))
-act <- as.integer(nrow(tT.sort[tT.sort$adj.P.Val <= 0.1 & tT.sort$logFC > 0, ]))
-
-print(c(supp, act))
-
 #make final and save
 final <- tT.sort[,-1]
 path <- paste("~/Desktop/MacMicking Lab/IFN_microarray/Processed Data/", tolower(chosen), "f.csv", sep = "")
 write.csv(final, file = path)
 
-}
 
 
 
