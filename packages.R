@@ -14,6 +14,9 @@ library(oligo)
 library(arrayQualityMetrics)
 library(lumi)
 library(biomaRt)
+library(GEOquery)
+library(limma)
+library(genefilter)
 
 #Analysis and statistics packages
 library(limma)
