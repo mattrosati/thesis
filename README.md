@@ -3,7 +3,7 @@
 This is a progress report on my Biology thesis as of September 2019.
 
 
-###Background
+### Background
 ==========
 
 Traditional views on immunity to infection promote the idea of a defense
@@ -47,7 +47,7 @@ comment on the adopted methodology to see what can be improved upon
 going forward. Finally I will discuss the future work that will have to
 be completed in order for this research to be satisfactory.
 
-###Preliminary Results
+### Preliminary Results
 ===================
 
 Initial steps of this research involved gathering enough raw genomic
@@ -136,7 +136,7 @@ genes, with the hypothesis that there would be differences between the
 two groups of nodes. This approach did not support my hypothesis, 
 because there was no difference, but I believe that might be due to looking at the data the wrong way.
 
-###Issues in Methodology
+### Issues in Methodology
 =====================
 
 The most salient issues in the methodology largely can be divided into
@@ -180,7 +180,7 @@ Perhaps as RNAseq becomes more affordable this research can be validated
 using that data.
 
 
-###Future Work
+### Future Work
 ===========
 
 There is a lot of future work that has to be done. This can be divided
