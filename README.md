@@ -1,6 +1,6 @@
 # Cell Type Modularity in Cell Autonomous Immunity
 
-This is a progress report on my Biology thesis as of September 2019.
+This is a code repostiory for my Biology thesis as of September 2019.
 
 
 ### Background
@@ -123,7 +123,7 @@ that was followed doing so. This was done following what I learned by
 reading Dmitry Zinoviev's _Complex Network Analysis in
 Python_. Using the *Newtorkx* package
 in combination with the "interactome" data that can be obtained through
-the use of the BioPlex 2.0 database,[^1] I generated a Python
+the use of the BioPlex 2.0 database,<sup>[1](#footnote1)</sup> I generated a Python
 network object with 10961 nodes and 56553 edges and proceeded to
 annotate it with the activation and suppression data I obtained
 previously. I then performed two forms of very preliminary analysis. In
@@ -237,6 +237,6 @@ some more research in methods to measure combined state values, but will
 only happen after the first part that was outlined in the third step.
 
 
-[^1]: This database is a network of a large quantity (about 11,000) of
+<a name="footnote1">1</a>: This database is a network of a large quantity (about 11,000) of
     the interacting proteins in the HEK293T cell type, ideal for my
     purposes.
